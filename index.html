@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Твой персональный AI-компаньон — общение без ограничений">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <title>AI Companion</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body id="body">
+
+<!-- ═══════════════════ SETUP WIZARD ═══════════════════ -->
+<div class="setup-overlay" id="setupOverlay">
+    <div class="setup-modal">
+        <div class="setup-header">
+            <div class="setup-logo">✦</div>
+            <h1>AI Companion</h1>
+            <p class="setup-sub">Создай своего идеального собеседника</p>
+        </div>
+
+        <div class="setup-progress">
+            <div class="step-dot active" data-step="1"></div>
+            <div class="step-line"></div>
+            <div class="step-dot" data-step="2"></div>
+            <div class="step-line"></div>
+            <div class="step-dot" data-step="3"></div>
+        </div>
+
+        <!-- Step 1: API -->
+        <div class="setup-step active" id="step1">
+            <h2>Подключи AI</h2>
+            <div class="api-options">
+                <div class="api-option selected" data-api="openrouter" onclick="selectApiProvider(this,'openrouter')">
+                    <div class="api-icon">🌐</div>
+                    <div class="api-info">
+                        <strong>OpenRouter</strong>
+                        <span>Онлайн, бесплатно, много моделей</span>
+                    </div>
+                    <div class="api-check">✓</div>
+                </div>
+                <div class="api-option" data-api="ollama" onclick="selectApiProvider(this,'ollama')">
+                    <div class="api-icon">🏠</div>
+                    <div class="api-info">
+                        <strong>Ollama (локально)</strong>
+                        <span>Полностью приватно, без цензуры</span>
+                    </div>
+                    <div class="api-check">✓</div>
+                </div>
+            </div>
+
+            <div id="apiKeySection">
+                <div class="input-group">
+                    <label>API Ключ OpenRouter</label>
+                    <div class="input-with-icon">
+                        <input type="password" id="setupApiKey" placeholder="sk-or-v1-...">
+                        <button class="eye-btn" onclick="togglePwd('setupApiKey',this)">👁</button>
+                    </div>
+                </div>
+                <div class="how-to-key">
+                    <details>
+                        <summary>📖 Как получить бесплатный ключ?</summary>
+                        <div class="how-to-steps">
+                            <div class="how-step"><span>1</span> Перейди на <a href="https://openrouter.ai" target="_blank">openrouter.ai</a></div>
+                            <div class="how-step"><span>2</span> Зарегистрируйся через Google</div>
+                            <div class="how-step"><span>3</span> Перейди в раздел <a href="https://openrouter.ai/keys" target="_blank">Keys</a></div>
+                            <div class="how-step"><span>4</span> Нажми "Create Key" → скопируй</div>
+                            <div class="how-step"><span>✅</span> Бесплатные модели работают без пополнения!</div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <div id="ollamaSection" style="display:none">
+                <div class="input-group">
+                    <label>URL Ollama</label>
+                    <input type="text" id="setupOllamaUrl" value="http://localhost:11434">
+                </div>
+                <div class="hint-box">💡 Запусти: <code>OLLAMA_ORIGINS=* ollama serve</code></div>
+            </div>
+
+            <button class="btn-primary" onclick="nextStep(2)">Далее →</button>
+        </div>
+
+        <!-- Step 2: Companion -->
+        <div class="setup-step" id="step2">
+            <h2>Создай компаньона</h2>
+
+            <div class="avatar-setup-area">
+                <div class="avatar-upload" id="setupAvatarPreview" onclick="document.getElementById('setupAvatarFile').click()">
+                    <div class="avatar-placeholder">
+                        <span class="avatar-plus">+</span>
+                        <span class="avatar-label">Фото</span>
+                    </div>
+                    <img id="setupAvatarImg" style="display:none" alt="">
+                </div>
+                <input type="file" id="setupAvatarFile" accept="image/*" style="display:none" onchange="handleSetupAvatar(this)">
+            </div>
+
+            <div class="input-group">
+                <label>Имя</label>
+                <input type="text" id="setupName" placeholder="Алина" value="Алина">
+            </div>
+
+            <div class="input-group">
+                <label>Пресет личности</label>
+                <div class="preset-grid">
+                    <button class="preset-btn selected" data-preset="girlfriend" onclick="selectPreset(this,'girlfriend')">💕 Подруга</button>
+                    <button class="preset-btn" data-preset="boyfriend" onclick="selectPreset(this,'boyfriend')">💙 Парень</button>
+                    <button class="preset-btn" data-preset="friend" onclick="selectPreset(this,'friend')">🤝 Друг</button>
+                    <button class="preset-btn" data-preset="custom" onclick="selectPreset(this,'custom')">✏️ Своё</button>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Описание личности</label>
+                <textarea id="setupPersonality" rows="5" placeholder="Опиши кто это..."></textarea>
+            </div>
+
+            <div class="step-btns">
+                <button class="btn-secondary" onclick="nextStep(1)">← Назад</button>
+                <button class="btn-primary" onclick="nextStep(3)">Далее →</button>
+            </div>
+        </div>
+
+        <!-- Step 3: UI Style -->
+        <div class="setup-step" id="step3">
+            <h2>Выбери стиль интерфейса</h2>
+            <div class="ui-choice">
+                <div class="ui-choice-card selected" data-ui="instagram" onclick="selectSetupUI(this,'instagram')">
+                    <div class="ui-preview-box ig-mock">
+                        <div class="mock-header"><div class="mock-avatar"></div><div class="mock-name"></div></div>
+                        <div class="mock-msgs">
+                            <div class="mock-msg ai"></div>
+                            <div class="mock-msg user"></div>
+                            <div class="mock-msg ai short"></div>
+                        </div>
+                    </div>
+                    <div class="ui-choice-label">
+                        <strong>Instagram</strong>
+                        <span>Пузырьки, минимализм</span>
+                    </div>
+                    <div class="ui-check">✓</div>
+                </div>
+                <div class="ui-choice-card" data-ui="discord" onclick="selectSetupUI(this,'discord')">
+                    <div class="ui-preview-box dc-mock">
+                        <div class="mock-sidebar"></div>
+                        <div class="mock-dc-main">
+                            <div class="mock-dc-header"></div>
+                            <div class="mock-dc-msgs">
+                                <div class="mock-dc-msg"><div class="mock-dc-av"></div><div class="mock-dc-text"></div></div>
+                                <div class="mock-dc-msg user"><div class="mock-dc-av"></div><div class="mock-dc-text"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ui-choice-label">
+                        <strong>Discord</strong>
+                        <span>Тёмный, сервер-стиль</span>
+                    </div>
+                    <div class="ui-check">✓</div>
+                </div>
+            </div>
+
+            <div class="step-btns">
+                <button class="btn-secondary" onclick="nextStep(2)">← Назад</button>
+                <button class="btn-primary launch-btn" onclick="finishSetup()">🚀 Начать общение!</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════ MAIN APP ═══════════════════ -->
+<div class="app" id="app" style="display:none">
+
+    <!-- ── INSTAGRAM UI ── -->
+    <div class="ig-app" id="igApp">
+        <header class="ig-header">
+            <div class="ig-header-left">
+                <div class="ig-companion-wrap" onclick="openSettings()">
+                    <div class="ig-avatar-ring">
+                        <img class="ig-avatar" id="igAvatar" src="" alt="">
+                        <span class="ig-online-dot" id="igOnlineDot"></span>
+                    </div>
+                    <div class="ig-companion-info">
+                        <span class="ig-companion-name" id="igName">Алина</span>
+                        <span class="ig-companion-status" id="igStatus">в сети</span>
+                    </div>
+                </div>
+            </div>
+            <div class="ig-header-right">
+                <button class="ig-icon-btn" onclick="openSettings()" title="Настройки">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="ig-chat-list" id="igChatList"></div>
+
+        <div class="ig-messages" id="igMessages">
+            <div class="ig-messages-inner" id="igMessagesInner"></div>
+        </div>
+
+        <div class="ig-typing-bar" id="igTyping" style="display:none">
+            <img class="typing-avatar" id="igTypingAvatar" src="" alt="">
+            <div class="typing-bubble">
+                <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </div>
+        </div>
+
+        <div class="ig-input-bar">
+            <button class="ig-icon-btn emoji-trigger" onclick="toggleEmoji(this)" title="Emoji">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            </button>
+            <div class="ig-input-wrap">
+                <div class="ig-input" contenteditable="true" id="igInput" data-placeholder="Message..." onkeydown="handleKeydown(event)" oninput="onInputChange()"></div>
+            </div>
+            <button class="ig-icon-btn sticker-trigger" onclick="toggleStickerPicker(this)" title="Stickers">🎭</button>
+            <button class="ig-send-btn" id="igSendBtn" onclick="sendMessage()">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- ── DISCORD UI ── -->
+    <div class="dc-app" id="dcApp" style="display:none">
+        <div class="dc-sidebar">
+            <div class="dc-server-icon" onclick="openSettings()">
+                <img id="dcSideAvatar" src="" alt="">
+            </div>
+            <div class="dc-sep"></div>
+            <div class="dc-chat-list" id="dcChatList"></div>
+            <div class="dc-sep"></div>
+            <button class="dc-sidebar-btn" onclick="openSettings()" title="Settings">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </button>
+        </div>
+
+        <div class="dc-main">
+            <header class="dc-header">
+                <div class="dc-header-left">
+                    <span class="dc-hash">#</span>
+                    <span class="dc-channel-name" id="dcChannelName">direct</span>
+                    <div class="dc-header-divider"></div>
+                    <img class="dc-header-avatar" id="dcHeaderAvatar" src="" alt="">
+                    <div class="dc-header-user">
+                        <span class="dc-header-name" id="dcName">Алина</span>
+                        <span class="dc-status-pill"><span class="dc-online-dot" id="dcOnlineDot"></span><span id="dcStatus">в сети</span></span>
+                    </div>
+                </div>
+                <div class="dc-header-right">
+                    <button class="dc-header-btn" onclick="openSettings()" title="Настройки">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    </button>
+                </div>
+            </header>
+
+            <div class="dc-messages" id="dcMessages">
+                <div class="dc-messages-inner" id="dcMessagesInner"></div>
+            </div>
+
+            <div class="dc-typing-bar" id="dcTyping" style="display:none">
+                <img class="typing-avatar sm" id="dcTypingAvatar" src="" alt="">
+                <span class="dc-typing-text"><em id="dcTypingName">Алина</em> печатает...</span>
+                <div class="typing-bubble sm"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            </div>
+
+            <div class="dc-input-bar">
+                <button class="dc-input-icon emoji-trigger" onclick="toggleEmoji(this)" title="Emoji">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                </button>
+                <div class="dc-input" contenteditable="true" id="dcInput" data-placeholder="Message..." onkeydown="handleKeydown(event)" oninput="onInputChange()"></div>
+                <button class="dc-input-icon sticker-trigger" onclick="toggleStickerPicker(this)" title="Stickers">🎭</button>
+                <button class="dc-send-btn" onclick="sendMessage()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- STICKER PICKER -->
+<div class="sticker-picker" id="stickerPicker">
+    <div class="sticker-picker-header">
+        <span>🎭 Stickers</span>
+    </div>
+    <div class="sticker-picker-content" id="stickerPickerContent"></div>
+</div>
+
+<!-- ═══════════════════ SETTINGS PANEL ═══════════════════ -->
+<div class="settings-overlay" id="settingsOverlay">
+    <div class="settings-panel-container">
+
+        <!-- LEFT NAV -->
+        <div class="settings-nav">
+            <div class="settings-profile-mini">
+                <img id="settingsNavAvatar" src="" alt="">
+                <div>
+                    <div class="settings-nav-name" id="settingsNavName">Алина</div>
+                    <div class="settings-nav-status">в сети</div>
+                </div>
+            </div>
+
+            <div class="nav-section-label">КОМПАНЬОН</div>
+            <button class="nav-item active" data-panel="companion" onclick="switchSettingsPanel(this,'companion')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Профиль
+            </button>
+            <button class="nav-item" data-panel="personality" onclick="switchSettingsPanel(this,'personality')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44l-1.35-1.35A2.5 2.5 0 0 0 2 19v0a2.5 2.5 0 0 0 2.5 2.5h15a2.5 2.5 0 0 0 2.5-2.5v0a2.5 2.5 0 0 0-.69-1.74L19 15.5"/><path d="M9.5 2H19a2.5 2.5 0 0 1 2.5 2.5v7.5"/></svg>
+                Личность & Модель
+            </button>
+
+            <div class="nav-section-label">ВИД</div>
+            <button class="nav-item" data-panel="interface" onclick="switchSettingsPanel(this,'interface')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                Интерфейс
+            </button>
+            <button class="nav-item" data-panel="theme" onclick="switchSettingsPanel(this,'theme')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M4.22 4.22l2.12 2.12m11.32 11.32 2.12 2.12M2 12h3m14 0h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+                Тема & Цвета
+            </button>
+
+            <div class="nav-section-label">ПОВЕДЕНИЕ</div>
+            <button class="nav-item" data-panel="proactive" onclick="switchSettingsPanel(this,'proactive')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Инициатива
+            </button>
+
+            <div class="nav-section-label">СТИКЕРЫ</div>
+            <button class="nav-item" data-panel="stickers" onclick="switchSettingsPanel(this,'stickers')">
+                🎭 Стикеры
+            </button>
+
+            <div class="nav-section-label">СИСТЕМА</div>
+            <button class="nav-item" data-panel="api" onclick="switchSettingsPanel(this,'api')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                API & Ключ
+            </button>
+            <button class="nav-item" data-panel="data" onclick="switchSettingsPanel(this,'data')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                Данные
+            </button>
+
+            <div class="nav-divider"></div>
+            <button class="nav-item danger" onclick="clearChatConfirm()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                Очистить чат
+            </button>
+            <button class="nav-item danger" onclick="deleteCurrentChat()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Удалить чат
+            </button>
+            <button class="nav-item close-btn" onclick="closeSettings()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Закрыть
+            </button>
+        </div>
+
+        <!-- RIGHT CONTENT -->
+        <div class="settings-content">
+
+            <!-- COMPANION PANEL -->
+            <div class="s-panel active" id="panel-companion">
+                <div class="s-panel-header">
+                    <h2>Профиль компаньона</h2>
+                    <p>Настрой внешность и имя своего AI</p>
+                </div>
+
+                <div class="avatar-edit-section">
+                    <div class="avatar-edit-wrap" onclick="document.getElementById('sAvatarFile').click()">
+                        <img id="sAvatarImg" src="" alt="" class="avatar-edit-img">
+                        <div class="avatar-edit-overlay">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                            <span>Изменить фото</span>
+                        </div>
+                    </div>
+                    <input type="file" id="sAvatarFile" accept="image/*" style="display:none" onchange="handleSAvatar(this)">
+                </div>
+
+                <div class="s-field">
+                    <label>Имя компаньона</label>
+                    <input type="text" id="sName" placeholder="Алина" oninput="liveUpdateName()">
+                </div>
+                <div class="s-field">
+                    <label>Статус (в шапке)</label>
+                    <input type="text" id="sStatus" placeholder="в сети" oninput="liveUpdateStatus()">
+                </div>
+                <button class="btn-save" onclick="saveCompanionProfile()">💾 Сохранить</button>
+            </div>
+
+            <!-- PERSONALITY PANEL -->
+            <div class="s-panel" id="panel-personality">
+                <div class="s-panel-header">
+                    <h2>Личность & Модель</h2>
+                    <p>Опиши кто твой компаньон и какой AI использовать</p>
+                </div>
+
+                <div class="s-field">
+                    <label>Системный промпт (личность ИИ)</label>
+                    <div class="char-hint">
+                        Используй <code>{{char}}</code> вместо имени бота и <code>{{user}}</code> вместо своёго — автоматически заменяются. Пиши от третьего лица: «{{char}} любит {{user}}...»
+                    </div>
+                    <textarea id="sPersonality" rows="9" placeholder="{{char}} — моя подруга. Ей 20 лет, она весёлая и нежная. Она любит {{user}} и ненавидит когда он уходит..." oninput="saveSettings()"></textarea>
+                    <span class="field-hint">💡 Чем подробнее — тем лучше роль. Пресеты выше уже настроены под этот формат.</span>
+                </div>
+
+                <div class="s-field">
+                    <label>Примеры диалога <span style="font-weight:400;opacity:.6">(example messages)</span></label>
+                    <textarea id="sExampleMessages" rows="7" placeholder="{{user}}: Привет!&#10;{{char}}: Ох привет) скучала по тебе 🥺&#10;{{user}}: На работе был&#10;{{char}}: И как там было? надеюсь не слишком скучно 😐" oninput="saveSettings()"></textarea>
+                    <span class="field-hint">💬 Задай 2-5 примеров диалога — ИИ будет подражать тон, язык и стиль.</span>
+                </div>
+
+                <div class="s-field">
+                    <label>Пресет личности</label>
+                    <div class="preset-row">
+                        <button class="preset-pill" onclick="applyPreset('girlfriend')">💕 Подруга</button>
+                        <button class="preset-pill" onclick="applyPreset('boyfriend')">💙 Парень</button>
+                        <button class="preset-pill" onclick="applyPreset('friend')">🤝 Друг</button>
+                        <button class="preset-pill" onclick="applyPreset('mentor')">📚 Наставник</button>
+                        <button class="preset-pill" onclick="applyPreset('tsundere')">😤 Цундере</button>
+                    </div>
+                </div>
+
+                <div class="s-field">
+                    <label>Системный промпт (личность ИИ)</label>
+                    <textarea id="sPersonality" rows="10" placeholder="Опиши кто это, как общается, что любит..." oninput="saveSettings()"></textarea>
+                    <span class="field-hint">💡 Чем подробнее — тем лучше войдёт в роль. Пиши на любом языке.</span>
+                </div>
+
+                <div class="s-divider"></div>
+
+                <div class="s-field">
+                    <label>Источник AI</label>
+                    <div class="source-toggle">
+                        <button id="srcBtnOR" class="src-btn active" onclick="switchApiSource('openrouter')">🌐 OpenRouter</button>
+                        <button id="srcBtnOL" class="src-btn" onclick="switchApiSource('ollama')">🏠 Ollama</button>
+                    </div>
+                </div>
+
+                <div id="sModelORField" class="s-field">
+                    <label>Модель OpenRouter</label>
+                    <select id="sModelOR" onchange="saveSettings()">
+                        <option value="openrouter/auto" selected>🤖 Auto (авто-выбор — всегда работает)</option>
+                        <option value="deepseek/deepseek-r1:free">DeepSeek R1 — рассуждения ⭐</option>
+                        <option value="deepseek/deepseek-chat-v3-0324:free">DeepSeek V3 ⭐</option>
+                        <option value="google/gemma-3-27b-it:free">Gemma 3 27B</option>
+                        <option value="google/gemma-2-9b-it:free">Gemma 2 9B</option>
+                        <option value="qwen/qwen3-8b:free">Qwen3 8B</option>
+                        <option value="qwen/qwen3-14b:free">Qwen3 14B</option>
+                        <option value="mistralai/mistral-7b-instruct:free">Mistral 7B</option>
+                        <option value="nvidia/llama-3.1-nemotron-nano-8b-v1:free">Nemotron Nano 8B</option>
+                        <option value="microsoft/phi-3-mini-128k-instruct:free">Phi-3 Mini</option>
+                        <option value="nousresearch/hermes-3-llama-3.1-405b:free">Hermes 3 405B (может быть занят)</option>
+                        <option value="meta-llama/llama-3.1-8b-instruct:free">Llama 3.1 8B (может быть занят)</option>
+                    </select>
+                    <span class="field-hint">💡 Список меняется. Актуальные: <a href="https://openrouter.ai/models?q=:free" target="_blank">openrouter.ai/models</a> (фильтр ":free")</span>
+                </div>
+
+                <div id="sModelOLField" class="s-field" style="display:none">
+                    <label>Модель Ollama</label>
+                    <input type="text" id="sModelOL" placeholder="dolphin-mistral" oninput="saveSettings()">
+                    <span class="field-hint">Введи имя модели как в <code>ollama list</code></span>
+                </div>
+
+                <div class="s-field">
+                    <label>Температура (креативность): <span id="sTempVal">0.85</span></label>
+                    <input type="range" min="0" max="2" step="0.05" value="0.85" id="sTemp" oninput="updateTemp(this.value)">
+                    <span class="field-hint">0 = сухо, 1 = баланс, 2 = творческий хаос</span>
+                </div>
+                <div class="s-field">
+                    <label>Длина ответа</label>
+                    <select id="sMaxTokens" onchange="saveSettings()">
+                        <option value="200">Коротко (~50 слов)</option>
+                        <option value="400" selected>Стандартно (~100 слов)</option>
+                        <option value="800">Развёрнуто (~200 слов)</option>
+                        <option value="1500">Подробно (~400 слов)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- INTERFACE PANEL -->
+            <div class="s-panel" id="panel-interface">
+                <div class="s-panel-header">
+                    <h2>Стиль интерфейса</h2>
+                    <p>Переключайся между Instagram и Discord</p>
+                </div>
+
+                <div class="ui-switch-cards">
+                    <div class="ui-switch-card" id="uiCardIG" onclick="switchUI('instagram')">
+                        <div class="ui-switch-preview ig-preview-card">
+                            <div class="prev-header"><div class="prev-av"></div><div class="prev-names"><div class="prev-nm"></div><div class="prev-st"></div></div></div>
+                            <div class="prev-msgs">
+                                <div class="prev-msg ai"></div>
+                                <div class="prev-msg user"></div>
+                                <div class="prev-msg ai short"></div>
+                                <div class="prev-msg user short"></div>
+                            </div>
+                            <div class="prev-input"></div>
+                        </div>
+                        <div class="ui-switch-info">
+                            <strong>Instagram</strong>
+                            <span>Минималистичный, пузырьки</span>
+                        </div>
+                        <div class="ui-switch-check" id="uiCheckIG">✓</div>
+                    </div>
+
+                    <div class="ui-switch-card" id="uiCardDC" onclick="switchUI('discord')">
+                        <div class="ui-switch-preview dc-preview-card">
+                            <div class="prev-dc-sidebar"></div>
+                            <div class="prev-dc-main">
+                                <div class="prev-dc-header"></div>
+                                <div class="prev-dc-msgs">
+                                    <div class="prev-dc-msg"><div class="prev-dc-av"></div><div class="prev-dc-lines"><div class="prev-dc-nm"></div><div class="prev-dc-txt"></div></div></div>
+                                    <div class="prev-dc-msg"><div class="prev-dc-av user"></div><div class="prev-dc-lines"><div class="prev-dc-nm user"></div><div class="prev-dc-txt"></div></div></div>
+                                </div>
+                                <div class="prev-dc-input"></div>
+                            </div>
+                        </div>
+                        <div class="ui-switch-info">
+                            <strong>Discord</strong>
+                            <span>Тёмный, серверный стиль</span>
+                        </div>
+                        <div class="ui-switch-check" id="uiCheckDC"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- THEME PANEL -->
+            <div class="s-panel" id="panel-theme">
+                <div class="s-panel-header">
+                    <h2>Тема & Цвета</h2>
+                    <p>Полная кастомизация внешнего вида</p>
+                </div>
+
+                <div class="s-field">
+                    <label>Цвет твоих сообщений</label>
+                    <div class="color-swatches" id="userBubbleSwatches">
+                        <div class="swatch" style="background:linear-gradient(135deg,#833AB4,#FD1D1D,#F77737)" data-value="linear-gradient(135deg,#833AB4,#FD1D1D,#F77737)" onclick="setVar('--user-bubble',this.dataset.value,this)"></div>
+                        <div class="swatch" style="background:linear-gradient(135deg,#5865F2,#4752C4)" data-value="linear-gradient(135deg,#5865F2,#4752C4)" onclick="setVar('--user-bubble',this.dataset.value,this)"></div>
+                        <div class="swatch" style="background:linear-gradient(135deg,#f093fb,#f5576c)" data-value="linear-gradient(135deg,#f093fb,#f5576c)" onclick="setVar('--user-bubble',this.dataset.value,this)"></div>
+                        <div class="swatch" style="background:linear-gradient(135deg,#4facfe,#00f2fe)" data-value="linear-gradient(135deg,#4facfe,#00f2fe)" onclick="setVar('--user-bubble',this.dataset.value,this)"></div>
+                        <div class="swatch" style="background:linear-gradient(135deg,#43e97b,#38f9d7)" data-value="linear-gradient(135deg,#43e97b,#38f9d7)" onclick="setVar('--user-bubble',this.dataset.value,this)"></div>
+                        <div class="swatch" style="background:linear-gradient(135deg,#fa709a,#fee140)" data-value="linear-gradient(135deg,#fa709a,#fee140)" onclick="setVar('--user-bubble',this.dataset.value,this)"></div>
+                        <label class="swatch custom-swatch" title="Свой цвет"><input type="color" onchange="setVar('--user-bubble',this.value,this.parentElement)">🎨</label>
+                    </div>
+                </div>
+
+                <div class="s-field">
+                    <label>Цвет сообщений компаньона</label>
+                    <div class="color-swatches" id="aiBubbleSwatches">
+                        <div class="swatch" style="background:#262626" data-value="#262626" onclick="setVar('--ai-bubble',this.dataset.value,this)"></div>
+                        <div class="swatch" style="background:#1e1e2e" data-value="#1e1e2e" onclick="setVar('--ai-bubble',this.dataset.value,this)"></div>
+                        <div class="swatch" style="background:#2B2D31" data-value="#2B2D31" onclick="setVar('--ai-bubble',this.dataset.value,this)"></div>
+                        <div class="swatch" style="background:#1a2744" data-value="#1a2744" onclick="setVar('--ai-bubble',this.dataset.value,this)"></div>
+                        <div class="swatch" style="background:#1e3a1e" data-value="#1e3a1e" onclick="setVar('--ai-bubble',this.dataset.value,this)"></div>
+                        <div class="swatch" style="background:#3d1a3d" data-value="#3d1a3d" onclick="setVar('--ai-bubble',this.dataset.value,this)"></div>
+                        <label class="swatch custom-swatch" title="Свой цвет"><input type="color" onchange="setVar('--ai-bubble',this.value,this.parentElement)">🎨</label>
+                    </div>
+                </div>
+
+                <div class="s-field">
+                    <label>Фон чата</label>
+                    <div class="bg-swatches">
+                        <div class="bg-swatch" style="background:#000000" data-value="#000000" onclick="setChatBg(this.dataset.value,null,this)"></div>
+                        <div class="bg-swatch" style="background:#0d0d0d" data-value="#0d0d0d" onclick="setChatBg(this.dataset.value,null,this)"></div>
+                        <div class="bg-swatch" style="background:#0d1117" data-value="#0d1117" onclick="setChatBg(this.dataset.value,null,this)"></div>
+                        <div class="bg-swatch" style="background:#1a1a2e" data-value="#1a1a2e" onclick="setChatBg(this.dataset.value,null,this)"></div>
+                        <div class="bg-swatch" style="background:linear-gradient(160deg,#0f0c29,#302b63,#24243e)" data-value="" data-gradient="linear-gradient(160deg,#0f0c29,#302b63,#24243e)" onclick="setChatBg(null,this.dataset.gradient,this)"></div>
+                        <div class="bg-swatch" style="background:linear-gradient(160deg,#1a1a2e,#16213e,#0f3460)" data-value="" data-gradient="linear-gradient(160deg,#1a1a2e,#16213e,#0f3460)" onclick="setChatBg(null,this.dataset.gradient,this)"></div>
+                        <label class="bg-swatch upload-bg" title="Своё фото">
+                            📷
+                            <input type="file" accept="image/*" style="display:none" onchange="handleBgUpload(this)">
+                        </label>
+                        <label class="bg-swatch custom-swatch" title="Свой цвет"><input type="color" onchange="setChatBg(this.value,null,this.parentElement)">🎨</label>
+                    </div>
+                </div>
+
+                <div class="s-field">
+                    <label>Шрифт</label>
+                    <select id="sFont" onchange="setFont(this.value)">
+                        <option value="'Inter', sans-serif">Inter (по умолчанию)</option>
+                        <option value="'Outfit', sans-serif">Outfit</option>
+                        <option value="'Segoe UI', sans-serif">Segoe UI</option>
+                        <option value="system-ui, sans-serif">System UI</option>
+                        <option value="'Georgia', serif">Georgia (засечки)</option>
+                    </select>
+                </div>
+                <div class="s-field">
+                    <label>Размер текста: <span id="sFontSzVal">16</span>px</label>
+                    <input type="range" min="12" max="22" value="16" id="sFontSz" oninput="setFontSize(this.value)">
+                </div>
+            </div>
+
+            <!-- PROACTIVE PANEL -->
+            <div class="s-panel" id="panel-proactive">
+                <div class="s-panel-header">
+                    <h2>Инициатива</h2>
+                    <p>ИИ будет сам писать тебе сообщения пока сайт открыт</p>
+                </div>
+
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <strong>Включить</strong>
+                        <span>ИИ сам напишет тебе через заданный интервал</span>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="sProactiveOn" onchange="toggleProactive()">
+                        <span class="toggle-track"></span>
+                    </label>
+                </div>
+
+                <div id="proactiveOptions">
+                    <div class="s-field">
+                        <label>Интервал: <span id="sProIntVal">10</span> минут</label>
+                        <input type="range" min="1" max="120" value="10" id="sProInt" oninput="updateProInt(this.value)">
+                    </div>
+                    <div class="s-field">
+                        <label>Активные часы</label>
+                        <div class="time-range-row">
+                            <div class="time-input-wrap">
+                                <label>С</label>
+                                <input type="number" id="sProStart" min="0" max="23" value="9" onchange="saveSettings()">
+                            </div>
+                            <span class="time-dash">—</span>
+                            <div class="time-input-wrap">
+                                <label>До</label>
+                                <input type="number" id="sProEnd" min="0" max="23" value="23" onchange="saveSettings()">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="s-field">
+                        <label>Стиль инициативных сообщений</label>
+                        <select id="sProStyle" onchange="saveSettings()">
+                            <option value="casual">Случайная тема</option>
+                            <option value="check">Узнать как дела</option>
+                            <option value="share">Поделиться чем-то</option>
+                            <option value="flirt">Флирт / нежность</option>
+                            <option value="question">Задать вопрос</option>
+                        </select>
+                    </div>
+                    <button class="btn-secondary" onclick="sendProactiveNow()">▶ Отправить сейчас (тест)</button>
+                </div>
+            </div>
+
+            <!-- API PANEL -->
+            <div class="s-panel" id="panel-api">
+                <div class="s-panel-header">
+                    <h2>API & Ключ</h2>
+                    <p>Настрой подключение к AI</p>
+                </div>
+
+                <div id="sApiKeyField" class="s-field">
+                    <label>API Ключ OpenRouter</label>
+                    <div class="input-with-icon">
+                        <input type="password" id="sApiKey" placeholder="sk-or-v1-..." oninput="saveSettings()">
+                        <button class="eye-btn" onclick="togglePwd('sApiKey',this)">👁</button>
+                    </div>
+                    <div class="how-to-key">
+                        <details>
+                            <summary>📖 Как получить бесплатный ключ</summary>
+                            <div class="how-to-steps">
+                                <div class="how-step"><span>1</span> Открой <a href="https://openrouter.ai" target="_blank">openrouter.ai</a></div>
+                                <div class="how-step"><span>2</span> Войди через Google аккаунт</div>
+                                <div class="how-step"><span>3</span> Перейди: <a href="https://openrouter.ai/keys" target="_blank">Keys → Create Key</a></div>
+                                <div class="how-step"><span>4</span> Скопируй и вставь сюда</div>
+                                <div class="how-step"><span>✅</span> Бесплатные модели (с `:free`) работают без денег!</div>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+
+                <div id="sOllamaField" class="s-field" style="display:none">
+                    <label>URL Ollama</label>
+                    <input type="text" id="sOllamaUrl" value="http://localhost:11434" oninput="saveSettings()">
+                    <span class="field-hint">Запусти Ollama: <code>OLLAMA_ORIGINS=* ollama serve</code></span>
+                </div>
+
+                <button class="btn-secondary" onclick="testConnection()">🔗 Проверить соединение</button>
+                <div id="connStatus" class="conn-status"></div>
+            </div>
+
+            <!-- DATA PANEL -->
+            <div class="s-panel" id="panel-data">
+                <div class="s-panel-header">
+                    <h2>Данные</h2>
+                    <p>Управление историей и настройками</p>
+                </div>
+
+                <div class="s-field">
+                    <label>История чата</label>
+                    <span class="field-hint">Сохраняется в браузере автоматически между сессиями</span>
+                    <div class="data-btn-row">
+                        <button class="btn-secondary" onclick="exportChat()">📤 Экспорт</button>
+                        <button class="btn-secondary danger" onclick="clearChatConfirm()">🗑 Очистить</button>
+                    </div>
+                </div>
+                <div class="s-field">
+                    <label>Настройки</label>
+                    <div class="data-btn-row">
+                        <button class="btn-secondary" onclick="exportSettings()">📤 Экспорт JSON</button>
+                        <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📥 Импорт</button>
+                        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importSettings(this)">
+                    </div>
+                </div>
+                <div class="s-field danger-zone">
+                    <label>Опасная зона</label>
+                    <button class="btn-secondary danger" onclick="resetAll()">⚠️ Сбросить всё и начать заново</button>
+                </div>
+            </div>
+
+            <!-- STICKERS PANEL -->
+            <div class="s-panel" id="panel-stickers">
+                <div class="s-panel-header">
+                    <h2>🎭 Стикеры</h2>
+                    <p>Загружай паки стикеров — ИИ будет использовать их по настроению автоматически</p>
+                </div>
+
+                <div class="char-hint">
+                    <strong>Как работает:</strong> Дай каждому стикеру тег эмоции (например: <code>happy</code>, <code>love</code>, <code>sad</code>, <code>shy</code>).
+                    ИИ автоматически пришлёт <code>[sticker:happy]</code> в нужный момент — и ты увидишь реальное изображение.
+                    Ты тоже можешь отправить стикер через кнопку 🎭 в чате.
+                </div>
+
+                <div class="s-field">
+                    <button class="btn-primary" onclick="addStickerPack()">+ Добавить пак</button>
+                    <span class="field-hint">Каждый пак — это группа стикеров (например «Аниме», «Мемы»)</span>
+                </div>
+
+                <div id="stickerPacksContainer"></div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- EMOJI PICKER -->
+<div class="emoji-picker" id="emojiPicker">
+    <div class="emoji-search"><input type="text" placeholder="Поиск..." oninput="filterEmoji(this.value)" id="emojiSearch"></div>
+    <div class="emoji-grid" id="emojiGrid"></div>
+</div>
+
+<!-- NOTIFICATION TOAST -->
+<div class="toast" id="toast"></div>
+
+<style>
+/* ── CHAT LIST — INSTAGRAM ── */
+.ig-chat-list {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    padding: 0;
+    background: rgba(0,0,0,0.6);
+    border-bottom: 1px solid var(--ig-border);
+    scrollbar-width: none;
+    flex-shrink: 0;
+}
+.ig-chat-list::-webkit-scrollbar { display: none; }
+.ig-dm-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background .15s;
+    border-right: 1px solid var(--ig-border);
+    min-width: 0;
+}
+.ig-dm-item:hover { background: rgba(255,255,255,0.05); }
+.ig-dm-item.active { background: rgba(255,255,255,0.08); }
+.ig-dm-avatar-wrap { position: relative; flex-shrink: 0; }
+.ig-dm-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.ig-dm-item.active .ig-dm-avatar { box-shadow: 0 0 0 2px #E1306C; }
+.unread-dot {
+    position: absolute; top: -4px; right: -4px;
+    background: #E1306C; color: #fff;
+    font-size: 10px; font-weight: 700;
+    width: 18px; height: 18px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+}
+.ig-dm-info { min-width: 0; display: none; }
+.ig-dm-item:hover .ig-dm-info,
+.ig-dm-item.active .ig-dm-info { display: block; }
+.ig-dm-name { font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; display: block; }
+.ig-dm-preview { font-size: 11px; color: rgba(255,255,255,.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; display: block; }
+.add-chat-icon {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    border: 2px dashed rgba(255,255,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: rgba(255,255,255,.5);
+    transition: all .2s;
+}
+.ig-dm-item.add-chat:hover .add-chat-icon {
+    background: rgba(225,48,108,0.2);
+    border-color: #E1306C;
+    color: #E1306C;
+}
+
+/* ── CHAT LIST — DISCORD ── */
+.dc-chat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 0;
+    overflow-y: auto;
+    flex: 1;
+    scrollbar-width: none;
+}
+.dc-chat-list::-webkit-scrollbar { display: none; }
+.dc-dm-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 6px 8px;
+    cursor: pointer;
+    border-radius: 8px;
+    margin: 0 4px;
+    position: relative;
+    transition: background .15s;
+}
+.dc-dm-item:hover { background: rgba(255,255,255,0.08); }
+.dc-dm-item.active { background: rgba(88,101,242,0.3); }
+.dc-dm-item.active::before {
+    content: '';
+    position: absolute;
+    left: -8px; top: 50%; transform: translateY(-50%);
+    width: 4px; height: 24px; background: #fff; border-radius: 0 2px 2px 0;
+}
+.dc-dm-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+.dc-dm-name { font-size: 10px; color: var(--dc-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 44px; text-align: center; }
+.dc-dm-item.active .dc-dm-name { color: #fff; }
+.dc-unread {
+    position: absolute; top: 2px; right: 2px;
+    background: #ed4245; color: #fff;
+    font-size: 9px; font-weight: 700;
+    width: 16px; height: 16px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+}
+.dc-add-chat {
+    background: none; border: 1px dashed rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.4); border-radius: 8px;
+    padding: 6px 4px; margin: 4px; font-size: 11px;
+    cursor: pointer; transition: all .2s; width: calc(100% - 8px);
+}
+.dc-add-chat:hover { border-color: #5865F2; color: #5865F2; background: rgba(88,101,242,0.1); }
+
+/* ── STICKER PICKER ── */
+.sticker-picker {
+    position: fixed;
+    bottom: 80px; left: 10px;
+    width: 280px; max-height: 320px;
+    background: #1e1f22;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    z-index: 900;
+    opacity: 0; pointer-events: none;
+    transform: translateY(12px);
+    transition: opacity .2s, transform .2s;
+}
+.sticker-picker.open {
+    opacity: 1; pointer-events: all;
+    transform: translateY(0);
+}
+.sticker-picker-header {
+    padding: 10px 14px 8px;
+    font-size: 13px; font-weight: 600; color: rgba(255,255,255,.7);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    flex-shrink: 0;
+}
+.sticker-picker-content {
+    overflow-y: auto;
+    padding: 8px;
+    flex: 1;
+}
+.sticker-pack-section { margin-bottom: 12px; }
+.sticker-pack-label {
+    font-size: 11px; font-weight: 600;
+    color: rgba(255,255,255,.4);
+    text-transform: uppercase; letter-spacing: .5px;
+    padding: 0 4px 6px; margin-bottom: 4px;
+}
+.sticker-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+}
+.sticker-pick-item {
+    width: 100%; aspect-ratio: 1;
+    object-fit: contain;
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 4px;
+    transition: background .15s, transform .1s;
+    background: rgba(255,255,255,0.04);
+}
+.sticker-pick-item:hover {
+    background: rgba(255,255,255,0.12);
+    transform: scale(1.1);
+}
+.sticker-empty {
+    text-align: center;
+    padding: 20px;
+    color: rgba(255,255,255,.4);
+    font-size: 13px;
+}
+
+/* ── STICKER IN MESSAGES ── */
+.sticker-img {
+    max-width: 160px; max-height: 160px;
+    object-fit: contain;
+    display: block;
+    border-radius: 4px;
+}
+.sticker-bubble {
+    background: transparent !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+}
+.sticker-msg { background: transparent !important; }
+.sticker-placeholder {
+    display: inline-block;
+    background: rgba(255,255,255,0.08);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 12px;
+    color: rgba(255,255,255,.5);
+}
+
+/* ── STICKER SETTINGS ── */
+.sticker-pack-card {
+    background: var(--settings-field-bg);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+    border: 1px solid var(--settings-border);
+}
+.sticker-pack-header {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 12px;
+}
+.pack-name-input {
+    flex: 1;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 6px 10px;
+    color: #fff; font-size: 14px; font-weight: 600;
+}
+.sticker-pack-stickers {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start;
+}
+.sticker-manage-item {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px; width: 72px;
+}
+.sticker-manage-item img {
+    width: 60px; height: 60px;
+    object-fit: contain; border-radius: 8px;
+    background: rgba(255,255,255,0.06); padding: 4px;
+}
+.sticker-tag-input {
+    width: 100%;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 3px 6px;
+    color: #fff; font-size: 11px;
+    text-align: center;
+}
+.btn-icon {
+    background: rgba(255,255,255,0.07);
+    border: none; border-radius: 8px;
+    padding: 6px 10px; cursor: pointer;
+    color: rgba(255,255,255,.6); font-size: 14px;
+    transition: background .15s, color .15s;
+}
+.btn-icon.danger:hover { background: rgba(237,66,69,0.2); color: #ed4245; }
+.btn-icon.sm { padding: 2px 6px; font-size: 11px; border-radius: 4px; }
+.add-sticker-btn {
+    width: 60px; height: 60px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.05);
+    border: 2px dashed rgba(255,255,255,0.2);
+    border-radius: 8px; cursor: pointer;
+    font-size: 12px; color: rgba(255,255,255,.4);
+    transition: all .2s; text-align: center; line-height: 1.3;
+}
+.add-sticker-btn:hover { border-color: #5865F2; color: #5865F2; background: rgba(88,101,242,0.1); }
+.sticker-empty-settings {
+    text-align: center; padding: 20px;
+    color: rgba(255,255,255,.4); font-size: 13px;
+}
+
+/* ── PACK ASSIGNMENT ROW ── */
+.pack-assignment-row {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    padding: 8px 0 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 10px;
+}
+.assign-label {
+    font-size: 12px; color: rgba(255,255,255,.45); font-weight: 600;
+    text-transform: uppercase; letter-spacing: .4px; margin-right: 4px;
+}
+.pack-chat-assign {
+    display: flex; align-items: center; gap: 5px;
+    background: rgba(255,255,255,0.06); border-radius: 20px;
+    padding: 4px 10px 4px 4px; cursor: pointer;
+    font-size: 12px; color: rgba(255,255,255,.7);
+    transition: background .15s;
+    border: 1px solid transparent;
+}
+.pack-chat-assign:hover { background: rgba(255,255,255,0.1); }
+.pack-chat-assign:has(input:checked) {
+    background: rgba(88,101,242,0.2);
+    border-color: rgba(88,101,242,0.4);
+    color: #fff;
+}
+.pack-chat-assign input[type="checkbox"] {
+    accent-color: #5865F2; width: 14px; height: 14px; cursor: pointer;
+}
+.assign-avatar {
+    width: 20px; height: 20px; border-radius: 50%; object-fit: cover;
+}
+.add-sticker-url-btn {
+    width: 60px; height: 60px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.05);
+    border: 2px dashed rgba(255,255,255,0.15);
+    border-radius: 8px; cursor: pointer;
+    font-size: 11px; color: rgba(255,255,255,.35);
+    transition: all .2s; text-align: center;
+}
+.add-sticker-url-btn:hover { border-color: #5865F2; color: #5865F2; background: rgba(88,101,242,0.1); }
+</style>
+
+<script src="app.js"></script>
+</body>
+</html>
